@@ -1,0 +1,8 @@
+### pycache and data folders to be ignored
+__pycache__/*
+data/*
+plots/*
+
+
+
+
