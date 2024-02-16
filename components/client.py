@@ -35,14 +35,14 @@ class Client():
         self.training_data = pd.DataFrame()
         for class_idx in range(self.n_classes):
             if dataset_selection_row[class_idx] != 0 and self.df[self.df['label']==class_idx].size != 0:
-                print("class_idx: ",class_idx,", dataset_selection_row[class_idx]: ",dataset_selection_row[class_idx],", self.df[self.df['label']==class_idx].size: ",len(self.df[self.df['label']==class_idx]))
+                # print("class_idx: ",class_idx,", dataset_selection_row[class_idx]: ",dataset_selection_row[class_idx],", self.df[self.df['label']==class_idx].size: ",len(self.df[self.df['label']==class_idx]))
                 if dataset_selection_row[class_idx] > len(self.df[self.df['label']==class_idx].index):
                     sampled_training_data = self.df[self.df['label']==class_idx].index
                 else:
                     sampled_training_data = np.random.choice(self.df[self.df['label']==class_idx].index, size=int(dataset_selection_row[class_idx]), replace=False)
                 self.training_data = pd.concat([self.training_data,self.df.iloc[sampled_training_data,:]])
         self.training_data = self.training_data.reset_index(drop=True)
-        print("self.training_data.shape: ",self.training_data.shape)
+        # print("self.training_data.shape: ",self.training_data.shape)
 
     
     def train(self):

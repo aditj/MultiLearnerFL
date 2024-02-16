@@ -2,8 +2,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import tqdm as tqdm
-from utils import get_action_from, get_current_learner, retrieve_cost
-    
+from utils.funcs import get_action_from, get_current_learner, retrieve_cost
+from components.net import CNN
+ 
 from components.client_oracle import Oracle
 
 delta = np.array([0.15,0.15,0.15,0.15,0.15])
@@ -38,6 +39,7 @@ step_lagrange = 0.01
 scale_parameter = 2000
 
 oracle = Oracle()
+oracle.initialize_clients(CNN)
 ### Set numpy print precision to 2
 np.set_printoptions(precision=1)
 # print(oracle.return_success_probability_classes(100000,[[0,1],[2,3],[4,5],[6,7],[8,9]]))

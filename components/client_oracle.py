@@ -144,9 +144,9 @@ class Oracle():
 
 
 
-        self.group_dist = self.client_dataset_selection_matrix_groups.sum(axis=0)
-        self.group_dist[0:self.n_categories_per_group[0]] = self.group_dist[0:self.n_categories_per_group[0]]/np.max(self.group_dist[0:self.n_categories_per_group[0]])
-        self.group_dist[self.n_categories_per_group[0]:] = self.group_dist[self.n_categories_per_group[0]:]/np.max(self.group_dist[self.n_categories_per_group[0]:])
+        # self.group_dist = self.client_dataset_selection_matrix_groups.sum(axis=0)
+        # self.group_dist[0:self.n_categories_per_group[0]] = self.group_dist[0:self.n_categories_per_group[0]]/np.max(self.group_dist[0:self.n_categories_per_group[0]])
+        # self.group_dist[self.n_categories_per_group[0]:] = self.group_dist[self.n_categories_per_group[0]:]/np.max(self.group_dist[self.n_categories_per_group[0]:])
         for client in range(self.n_clients):
             self.client_selection_matrix[client] = np.random.choice([0,1],p = self.p_stay[int(self.client_selection_matrix[client])])
         if self.client_selection_matrix.sum() == 0:
@@ -179,7 +179,7 @@ class Oracle():
 
     def get_oracle_success(self,learner,type_state="group"):
         round_success_coefficient = self.class_dist[self.learner_class_preference[learner][0]]+self.class_dist[self.learner_class_preference[learner][1]]
-        round_success_coefficients_groups = self.group_dist[self.learner_group_preference[learner]]
+        # round_success_coefficients_groups = self.group_dist[self.learner_group_preference[learner]]
         if type_state == "class":
             return self.success_thresholds <= round_success_coefficient
         else:
