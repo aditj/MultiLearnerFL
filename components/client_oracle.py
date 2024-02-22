@@ -286,8 +286,10 @@ class Oracle():
         ### zero out the weights
         for key in weights.keys():
             weights[key] = weights[key]*0
+        for client in np.nonzero(self.client_selection_matrix.flatten()==1)[0]:
+            for key in weights.keys():
+                weights[key] += self.clients[int(client)].get_weights()[key]
         
-        for client in np.argwhere(self.client_selection_matrix==1):
-            weights += self.clients[client].get_weights()
-        weights = weights/np.sum(self.current_clients)
+        for key in weights.keys():
+            weights[key] = weights[key]/np.sum(self.client_selection_matrix)
         return weights

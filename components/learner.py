@@ -17,8 +17,10 @@ class Learner():
             dataset_path = "./data/mnist_train.csv",
             validation_data_per_class = 100
     ):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         self.class_preference = class_preference
-        self.neural_network = neural_network()
+        self.neural_network = neural_network().to(device)
         self.dataset_path = dataset_path
         self.validation_data_per_class = validation_data_per_class
 
