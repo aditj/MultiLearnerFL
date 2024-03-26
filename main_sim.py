@@ -43,8 +43,8 @@ for learner in range(N_learners):
 #### Initialize Server
 
 
-N_mc = 50
-N_rounds = 1000
+N_mc = 25
+N_rounds = 2000
 N_Learners = 5
 N_classes = 10
 policies = [spane_action,greedy_action_0,greedy_action_1,greedy_action_2,random_action,random_action]
@@ -53,7 +53,7 @@ N_communication_rounds = np.zeros((len(policies),N_mc))
 
 evaluations = np.zeros((N_mc,len(policies),N_rounds,N_Learners))
 
-learner_states_store = np.ones((N_mc,len(policies),N_rounds+1,N_Learners))*20
+learner_states_store = np.ones((N_mc,len(policies),N_rounds+1,N_Learners))*200
 class_counts = np.zeros((len(policies),N_mc,N_rounds,N_Learners,2))
 round_participation = np.zeros((len(policies),N_mc,N_rounds,N_Learners))
 action_rounds = np.zeros((len(policies),N_mc,N_rounds,N_Learners)) 
@@ -141,5 +141,12 @@ print(class_counts_mean.shape)
 print(class_counts_mean.mean(1))
 print(action_rounds_mean.mean(1))
 print((class_counts_mean.mean(1)[0]-class_counts_mean.mean(1)[-1]).mean())
-print(evaluations.mean())
-    
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+plt.figure()
+print(evaluations.mean(0)[0,:,:].shape)
+plt.plot(evaluations.mean(0)[0,:,:],label="Spane")
+# plt.plot(evaluations.mean(0).mean(-1)[1,:],label="Greedy 0")
+plt.savefig("figures/spane.png")
+
