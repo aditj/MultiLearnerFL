@@ -122,7 +122,7 @@ round_participation = np.load("parameters/round_participation.npy")
 class_counts_mean = np.zeros((len(policies),N_mc,N_Learners,2))
 action_rounds_mean = np.zeros((len(policies),N_mc,N_Learners))
 learner_states_mean = np.zeros((len(policies),N_mc+1,N_Learners))
-evaluations_mean = np.zeros
+evaluations_mean = np.zeros((len(policies),N_mc,N_Learners))
 for policy in range(len(policies)):
     for mc_round in range(N_mc):
         for learner in range(N_Learners):
@@ -132,6 +132,8 @@ for policy in range(len(policies)):
             class_counts_mean[policy,mc_round,learner,:] = class_counts_mean_learner if np.sum(round_participation[policy,mc_round,:,learner]==1)>0 else np.array([0,0])
             learner_states_mean_learner = learner_states_store[mc_round,policy,np.concatenate([[0],round_participation[policy,mc_round,:,learner]==1]),learner]
             learner_states_mean[policy,mc_round,learner] = learner_states_mean_learner[-1] if np.sum(round_participation[policy,:,learner]==1)>0 else np.array([0])
+            evaluations_mean[policy,mc_round,learner] = evaluations[mc_round,policy,round_participation[policy,mc_round,:,learner]==1,learner].mean(0) if np.sum(round_participation[policy,mc_round,:,learner]==1)>0 else np.array([0])
+    
 
 print(learner_states_mean.mean(1))
 print(num_rounds.mean(1))
@@ -141,5 +143,5 @@ print(class_counts_mean.shape)
 print(class_counts_mean.mean(1))
 print(action_rounds_mean.mean(1))
 print((class_counts_mean.mean(1)[0]-class_counts_mean.mean(1)[-1]).mean())
-print(evaluations.mean())
-    
+print(evaluations[0,0,0])
+print(round_participation[0,0,:,0])
