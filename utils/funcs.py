@@ -36,19 +36,20 @@ def sigmoid_function(x,shift=0,tau=0.1):
     return 1/(1+np.exp((-x+shift)/tau))
 
 def get_action_from(policy_parameters,learner_state):
-    policy_parameters = policy_parameters.flatten()
-    n_thresholds = 2*len(policy_parameters)//3
-    sorted_thresholds = np.sort(policy_parameters[0:n_thresholds])
-    probabilities = np.sin(policy_parameters[n_thresholds::])**2
-    action = 0
+    policy_parameters = policy_parameters.flatten() ### load policy parameters
+    n_thresholds = 2*len(policy_parameters)//3 ### number of thresholds, 2/3 multiplication because one of the parameter is probability
+    sorted_thresholds = np.sort(policy_parameters[0:n_thresholds]) ### the sort doesn't do much
+    probabilities = np.sin(policy_parameters[n_thresholds::])**2 ## probability parameters
+    action = 0 ## output action
     for i in range(sorted_thresholds.shape[0]):
+        ### action probs calculated according to the sigmoid function (formulae in paper)
         if i % 2 == 0:
-            action+=sigmoid_function(learner_state,shift=sorted_thresholds[i])*(1-probabilities[i//2])
+            action+=sigmoid_function(learner_state,shift=sorted_thresholds[i])*(1-probabilities[i//2]) 
         else:    
             action+=sigmoid_function(learner_state,shift=sorted_thresholds[i])*probabilities[i//2]
         
-    action_index = np.floor(action).astype(int)
-    action_prob = action - action_index
+    action_index = np.floor(action).astype(int) ### action
+    action_prob = action - action_index ### its probability
     ### check if action_prob is nan
     if action_prob == None or np.isnan(action_prob):
         action_prob = 0
