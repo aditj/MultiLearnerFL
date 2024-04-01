@@ -38,15 +38,18 @@ def sigmoid_function(x,shift=0,tau=0.1):
 def get_action_from(policy_parameters,learner_state):
     policy_parameters = policy_parameters.flatten() ### load policy parameters
     n_thresholds = 2*len(policy_parameters)//3 ### number of thresholds, 2/3 multiplication because one of the parameter is probability
-    sorted_thresholds = np.sort(policy_parameters[0:n_thresholds]) ### the sort doesn't do much
-    probabilities = np.sin(policy_parameters[n_thresholds::])**2 ## probability parameters
+    sorted_thresholds_1 = np.sort(policy_parameters[0::3]) ### the sort doesn't do much
+    sorted_thresholds_2 = np.sort(policy_parameters[1::3])
+    probabilities = np.sin(policy_parameters[2::3])**2 ## probability parameters
     action = 0 ## output action
-    for i in range(sorted_thresholds.shape[0]):
+    for i in range(n_thresholds):
         ### action probs calculated according to the sigmoid function (formulae in paper)
+        j = i//2
         if i % 2 == 0:
-            action+=sigmoid_function(learner_state,shift=sorted_thresholds[i])*(1-probabilities[i//2]) 
+            
+            action+=sigmoid_function(learner_state,shift=sorted_thresholds_1[j])*(1-probabilities[i//2]) 
         else:    
-            action+=sigmoid_function(learner_state,shift=sorted_thresholds[i])*probabilities[i//2]
+            action+=sigmoid_function(learner_state,shift=sorted_thresholds_2[j])*probabilities[i//2]
         
     action_index = np.floor(action).astype(int) ### action
     action_prob = action - action_index ### its probability

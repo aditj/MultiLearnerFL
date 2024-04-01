@@ -13,7 +13,7 @@ class Oracle():
                 n_categories_per_group = [2,5],
                 N_max = 60,
                 max_classes = 2,
-                p_stay = [[0.8,0.2],[0.2,0.8]],
+                p_stay = [[0.7,0.3],[0.3,0.7]],
                 N_learners = 5,
                 client_dirichlet_alpha = [[0.6,0.4],[0.42,0.2,0.16,0.14,0.08]],
                 client_dirichlet_alpha_class = [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1],
@@ -147,6 +147,7 @@ class Oracle():
         # self.group_dist = self.client_dataset_selection_matrix_groups.sum(axis=0)
         # self.group_dist[0:self.n_categories_per_group[0]] = self.group_dist[0:self.n_categories_per_group[0]]/np.max(self.group_dist[0:self.n_categories_per_group[0]])
         # self.group_dist[self.n_categories_per_group[0]:] = self.group_dist[self.n_categories_per_group[0]:]/np.max(self.group_dist[self.n_categories_per_group[0]:])
+    def update_client_partition_matrix(self):
         for client in range(self.n_clients):
             self.client_selection_matrix[client] = np.random.choice([0,1],p = self.p_stay[int(self.client_selection_matrix[client])])
         if self.client_selection_matrix.sum() == 0:
