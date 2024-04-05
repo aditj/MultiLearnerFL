@@ -22,9 +22,11 @@ def get_current_learner(learner_states,oracle_states):
     current_learner_min = 100
     current_learner = 0
     for i in range(len(learner_states)):
+    
         if ((oracle_states[i]+1)*(learner_states[i]+1)<=0):
             print("Error",oracle_states,learner_states)
-            
+        if learner_states[i] == 0:
+            continue      
         if (1/((oracle_states[i]+1)*(learner_states[i]+1)))<current_learner_min:
             current_learner_min = (1/((oracle_states[i]+1)*(learner_states[i]+1)))
             current_learner = i

@@ -18,9 +18,9 @@ class Oracle():
                 client_dirichlet_alpha = [[0.6,0.4],[0.42,0.2,0.16,0.14,0.08]],
                 client_dirichlet_alpha_class = [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1],
                 learner_class_preference = np.array([[0,1],[2,3],[4,5],[6,7],[8,9]]), ### Learner class preference,
-                state_thresholds = np.array([0,0.05,0.1,0.2,0.3]), ### Thresholds on class distribution to determine oracle state for each learner
+                state_thresholds = np.array([0,0.2,0.25,0.30,0.35]), ### Thresholds on class distribution to determine oracle state for each learner
                 state_thresholds_groups = [0,0.2,0.4,0.6,0.8],
-                success_thresholds = 0.4,
+                success_thresholds = 0.6,
                 success_thresholds_groups = 0.75,
                 learner_group_preference =  [0,3,1,4,5],
                 N_mins = [0,0.5,1], ### Minimum number of samples per class per client
@@ -30,7 +30,7 @@ class Oracle():
                 ],
                 dist_classes = [[0.1,0.1],
                               [0.2,0.2],
-                              [0.5,0.5]],
+                              [0.3,0.3]],
                 client_dataset_path = "data/client_dataset/"
                 
                  ):
@@ -142,11 +142,6 @@ class Oracle():
         self.class_dist = self.client_dataset_selection_matrix.sum(axis=0)
         self.class_dist = self.class_dist/np.sum(self.class_dist)
 
-
-
-        # self.group_dist = self.client_dataset_selection_matrix_groups.sum(axis=0)
-        # self.group_dist[0:self.n_categories_per_group[0]] = self.group_dist[0:self.n_categories_per_group[0]]/np.max(self.group_dist[0:self.n_categories_per_group[0]])
-        # self.group_dist[self.n_categories_per_group[0]:] = self.group_dist[self.n_categories_per_group[0]:]/np.max(self.group_dist[self.n_categories_per_group[0]:])
     def update_client_partition_matrix(self):
         for client in range(self.n_clients):
             self.client_selection_matrix[client] = np.random.choice([0,1],p = self.p_stay[int(self.client_selection_matrix[client])])
