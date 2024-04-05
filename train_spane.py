@@ -48,7 +48,7 @@ np.set_printoptions(precision=1)
 #     print(P[i],"Oracle "+str(i))
 #     print(P[i].cumsum(axis=1),"Oracle "+str(i))
 
-n_mc = 10
+n_mc = 1
 n_iter = 200000
 learner_count = np.zeros((N))
 COST_TYPE = 'localized_sum'
@@ -92,15 +92,13 @@ if DO_SPANE:
             queuecost_current = retrieve_cost(current_learner,current_learner,current_learner_state,current_oracle_state,current_action,C_L_zeros,C_Q_L,C_Q_O,lagrange_parameters[current_learner],N=2,cost_type=COST_TYPE)
             learning_cost_gradient = ((learning_cost_incurred_plus - learning_cost_incurred_minus)/(2*delta_value))*delta_parameters
             queue_cost_gradient = ((queue_cost_incurred_plus - queue_cost_incurred_minus)/(2*delta_value))*delta_parameters
-            policy_parameters[current_learner] = policy_parameters_current - step_parameter*(learning_cost_gradient + queue_cost_gradient*np.max([0,lagrange_parameters[current_learner]+(queuecost_current - constraints[current_learner])]))
-            lagrange_parameters[current_learner] = np.max([1 - (step_parameter/scale_parameter)*lagrange_parameters[current_learner],lagrange_parameters[current_learner] + step_parameter*(queuecost_current - constraints[current_learner])])
+            policy_parameters[current_learner] = policy_parameters_current - step_parameter*(learning_cost_gradient + queue_cost_gradient*max([0,lagrange_parameters[current_learner]+(queuecost_current - constraints[current_learner])]))
+            lagrange_parameters[current_learner] = max([1 - (step_parameter/scale_parameter)*lagrange_parameters[current_learner],lagrange_parameters[current_learner] + step_parameter*(queuecost_current - constraints[current_learner])])
             oracle.update_client_selection_matrix(current_action,oracle.learner_class_preference[current_learner])
-
             round_success_or_not = oracle.get_oracle_success(current_learner,"class")
             learner_states[current_learner] -= round_success_or_not
             learner_states[learner_states<0] = 1
             arrivals = [np.random.choice([0,M[learner_index]], p =[1-delta[learner_index],delta[learner_index]]) for learner_index in range(N)]
-
             learner_states += np.array(arrivals)
             learner_states[learner_states>L-1] = L-1
             

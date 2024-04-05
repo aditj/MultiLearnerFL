@@ -8,15 +8,15 @@ import tqdm as tqdm
 #### Two key benchmarks: number of queries posed by each learner and the average number of classes from learner preference in the round that the learner learns in
 
 ### Policies 
-policy_parameters_load = np.load("parameters/policy_parameters_spane_trained.npy").mean(axis=0)[-1,:,:,:]
+# policy_parameters_load = np.load("parameters/policy_parameters_spane_trained.npy").mean(axis=0)[-1,:,:,:]
 ## Synthetic policy parameters
 N = 5
 O = 5
 U = 3
-# policy_parameters_load = np.zeros((N,O,3*(U-1)))
-# policy_parameters_load[:,:,0::3] = np.array([[15,20],[10,15],[5,10],[0,5],[0,0]])
-# policy_parameters_load[:,:,1::3] = np.array([[20,25],[15,20],[10,15],[5,10],[0,5]])
-# policy_parameters_load[:,:,2::3] =  np.array([[1],[1],[1],[1],[1]])
+policy_parameters_load = np.zeros((N,O,3*(U-1)))
+policy_parameters_load[:,:,0::3] = np.array([[15,20],[10,15],[5,10],[0,5],[0,0]])
+policy_parameters_load[:,:,1::3] = np.array([[20,25],[15,20],[10,15],[5,10],[0,5]])
+policy_parameters_load[:,:,2::3] =  np.array([[1],[1],[1],[1],[1]])
 print(policy_parameters_load)
 ### Greedy Scheduling, Random Action
 spane_action = lambda l,o,n: get_action_from(policy_parameters_load[n,o],l)

@@ -28,9 +28,9 @@ class Oracle():
                                 [[0.8,0.2],[0.5,0.1,0.2,0.2]],
                                 [[0.7,0.3],[0.45,0.19,0.18,0.18]]
                 ],
-                dist_classes = [[0.1,0.1],
+                dist_classes = np.array([[0.1,0.1],
                               [0.2,0.2],
-                              [0.5,0.5]],
+                              [0.5,0.5]]).reshape(3,2),
                 client_dataset_path = "data/client_dataset/"
                 
                  ):
@@ -115,7 +115,7 @@ class Oracle():
         #### Compute probability of each class for each client
         p_class = np.ones((self.n_classes,1))
         learner_class_preference = np.array(learner_class_preference)
-        p_class[learner_class_preference] = np.array(self.dist_classes[u]).reshape(-1,1)
+        p_class[learner_class_preference] = self.dist_classes[u].reshape(-1,1)
         ### Set other values to 1 - 2*self.dist_classes[u]
         other_classes = [i for i in range(self.n_classes) if i not in learner_class_preference]
         p_class[other_classes] = (1 - sum(self.dist_classes[u]))/(self.n_classes-len(self.dist_classes[u]))
@@ -160,15 +160,15 @@ class Oracle():
         class_coefficient = class_coefficient/np.sum(class_coefficient)
         self.class_coefficient = class_coefficient
 
-        group_coefficient = self.client_group_coefficients[participating_clients].sum(axis=0)
-        group_coefficient = group_coefficient/np.sum(group_coefficient)
-        self.group_coefficient = group_coefficient
+        # group_coefficient = self.client_group_coefficients[participating_clients].sum(axis=0)
+        # group_coefficient = group_coefficient/np.sum(group_coefficient)
+        # self.group_coefficient = group_coefficient
 
         for learner in range(self.N_learners):
             learner_class_coefficient = class_coefficient[self.learner_class_preference[learner][0]]+class_coefficient[self.learner_class_preference[learner][1]]
             self.oracle_states_classes[learner] = np.where(self.state_thresholds<=learner_class_coefficient)[0][-1]
-            learner_group_coefficient = group_coefficient[self.learner_group_preference[learner]]
-            self.oracle_states_groups[learner] = np.where(self.state_thresholds_groups<=learner_group_coefficient)[0][-1]
+            # learner_group_coefficient = group_coefficient[self.learner_group_preference[learner]]
+            # self.oracle_states_groups[learner] = np.where(self.state_thresholds_groups<=learner_group_coefficient)[0][-1]
         if type_state == "class":
             return self.oracle_states_classes.astype(int)
         else:
