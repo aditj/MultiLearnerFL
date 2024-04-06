@@ -7,20 +7,15 @@ from components.client import Client
 class Oracle():
     def __init__(self,
             U=[0,1,2],
-                n_clients = 20,
+                n_clients = 80,
                 n_classes = 10,
                 n_group_attributes = 2,
                 n_categories_per_group = [2,5],
                 N_max = 60,
-                max_classes = 2,
                 p_stay = [[0.8,0.2],[0.2,0.8]],
                 N_learners = 5,
                 client_dirichlet_alpha = [[0.6,0.4],[0.42,0.2,0.16,0.14,0.08]],
-                client_dirichlet_alpha_class = [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1],
-                learner_class_preference = np.array([[0,1],[2,3],[4,5],[6,7],[8,9]]), ### Learner class preference,
-                state_thresholds = np.array([0,0.05,0.1,0.2,0.3]), ### Thresholds on class distribution to determine oracle state for each learner
                 state_thresholds_groups = [0,0.2,0.4,0.6,0.8],
-                success_thresholds = 0.4,
                 success_thresholds_groups = 0.75,
                 learner_group_preference =  [0,3,1,4,5],
                 N_mins = [0,0.5,1], ### Minimum number of samples per class per client
@@ -28,9 +23,6 @@ class Oracle():
                                 [[0.8,0.2],[0.5,0.1,0.2,0.2]],
                                 [[0.7,0.3],[0.45,0.19,0.18,0.18]]
                 ],
-                dist_classes = [[0.1,0.1],
-                              [0.2,0.2],
-                              [0.5,0.5]],
                 client_dataset_path = "data/client_dataset/"
                 
                  ):
@@ -40,47 +32,56 @@ class Oracle():
         self.n_group_attributes = n_group_attributes
         self.n_categories_per_group = n_categories_per_group
         self.N_max = N_max
-        self.max_classes = max_classes
         self.p_stay = p_stay
         self.N_learners = N_learners
-        self.classes = np.arange(n_classes)
-        self.client_dirichlet_alpha_class = client_dirichlet_alpha_class
 
         self.initialize_client_dataset()
         self.client_dirichlet_alpha = client_dirichlet_alpha
-        self.learner_class_preference = learner_class_preference
-        self.state_thresholds = state_thresholds
         self.state_thresholds_groups = state_thresholds_groups
-        self.success_thresholds = success_thresholds
         self.success_thresholds_groups = success_thresholds_groups
         self.learner_group_preference = learner_group_preference
         self.N_mins = N_mins*self.N_max
         self.dist_groups = dist_groups
         self.client_selection_matrix = np.random.choice([0,1],(self.n_clients,1))
-        self.client_dataset_selection_matrix = np.zeros((self.n_clients,self.n_classes))
         self.client_dataset_selection_matrix_groups = np.zeros((self.n_clients,sum(self.n_categories_per_group)))
         self.initialize_oracle_states()
-        self.dist_classes = dist_classes
-        self.oracle_states_classes = np.zeros((self.N_learners,1)) ### Learner states for each round
-
         self.oracle_states_groups = np.zeros((self.N_learners,1)) ### Learner states for each round
-        self.client_dataset_path = client_dataset_path
-        self.create_client_datasets_files("mnist")
 
         ### Learner parameters
 
     def initialize_client_dataset(self):
-        
-        self.client_dataset = np.random.choice(np.arange(self.N_max), size = (self.n_clients,self.n_classes))
-        self.client_dataset = np.zeros_like(self.client_dataset)
+        data = pd.read_csv("data/utkface.csv")
+
+        self.n_data_per_client = 100
+        self.client_dataset = np.zeros_like(self.n_clients,self.n_data_per_client,sum(self.n_categories_per_group))
+
+        n_genders = 2
+        gender_dist = data['gender'].value_counts()
+        gender_dist = gender_dist/gender_dist.sum()
+        n_race = data['race'].unique().shape[0]
+        race_dist = data['race'].value_counts()
+        race_dist = race_dist/race_dist.sum()
+
         for client in range(self.n_clients):
-            p_client = np.random.dirichlet(self.client_dirichlet_alpha_class)
-            p_client = [0.1,0.9,0,0,0,0,0,0,0,0]
-            np.random.shuffle(p_client)
-            n_datapoints = 300
-            clients_class_indices = np.random.choice(np.arange(self.n_classes), size = n_datapoints,p = p_client)
-            for class_index in clients_class_indices:
-                self.client_dataset[client,class_index] += 1
+            p_client_gender = np.random.dirichlet(gender_dist)
+            p_client_race = np.random.dirichlet(race_dist)
+            for data_index in range(self.n_data_per_client):
+                sample_race = np.random.choice(np.arange(n_race),size=1,p=p_client_race)[0]
+                sample_gender = np.random.choice(np.arange(n_genders),size=1,p=p_client_gender)[0]
+                
+                try:
+                    sample_idx = data[(data['race']==sample_race)&(data['gender']==sample_gender)].sample(n=1).index
+                    data = data.drop(sample_idx)
+                    clients[client,data_index,n_genders+sample_race]=1
+                except ValueError:
+                    print(data.shape)
+                    print(data[(data['race']==client_race)],data[(data['gender']==client_gender)])
+
+                    print("No data left",sample_gender,sample_race)
+                    continue
+                
+
+
         self.client_dataset_size = self.client_dataset.sum(axis=1) # total number of samples
         if self.client_dataset_size.min() == 0:
             self.initialize_client_dataset()
