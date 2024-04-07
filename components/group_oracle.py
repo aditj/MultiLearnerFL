@@ -44,7 +44,7 @@ class Oracle():
         self.dist_groups = dist_groups
         self.client_selection_matrix = np.random.choice([0,1],(self.n_clients,1))
         self.client_dataset_selection_matrix_groups = np.zeros((self.n_clients,sum(self.n_categories_per_group)))
-        self.initialize_oracle_states()
+        
         self.oracle_states_groups = np.zeros((self.N_learners,1)) ### Learner states for each round
 
         ### Learner parameters
@@ -55,10 +55,10 @@ class Oracle():
         self.n_data_per_client = 100
         self.client_dataset = np.zeros_like(self.n_clients,self.n_data_per_client,sum(self.n_categories_per_group))
 
-        n_genders = 2
+        self.n_genders = 2
         gender_dist = data['gender'].value_counts()
         gender_dist = gender_dist/gender_dist.sum()
-        n_race = data['race'].unique().shape[0]
+        self.n_races = data['race'].unique().shape[0]
         race_dist = data['race'].value_counts()
         race_dist = race_dist/race_dist.sum()
 
@@ -66,88 +66,66 @@ class Oracle():
             p_client_gender = np.random.dirichlet(gender_dist)
             p_client_race = np.random.dirichlet(race_dist)
             for data_index in range(self.n_data_per_client):
-                sample_race = np.random.choice(np.arange(n_race),size=1,p=p_client_race)[0]
-                sample_gender = np.random.choice(np.arange(n_genders),size=1,p=p_client_gender)[0]
+                sample_race = np.random.choice(np.arange(self.n_races),size=1,p=p_client_race)[0]
+                sample_gender = np.random.choice(np.arange(self.n_genders),size=1,p=p_client_gender)[0]
                 
                 try:
                     sample_idx = data[(data['race']==sample_race)&(data['gender']==sample_gender)].sample(n=1).index
                     data = data.drop(sample_idx)
-                    clients[client,data_index,n_genders+sample_race]=1
+                    self.client_dataset[client,data_index,self.sample_gender]=1
+                    self.client_dataset[client,data_index,self.n_genders+sample_race]=1
                 except ValueError:
                     print(data.shape)
-                    print(data[(data['race']==client_race)],data[(data['gender']==client_gender)])
 
                     print("No data left",sample_gender,sample_race)
                     continue
                 
-
-
-        self.client_dataset_size = self.client_dataset.sum(axis=1) # total number of samples
-        if self.client_dataset_size.min() == 0:
-            self.initialize_client_dataset()
-            return
-        self.client_class_coefficient = self.client_dataset/self.client_dataset_size.reshape(self.n_clients,1) # class coefficient for each client
-    def get_class_dist(self):
-        return self.client_dataset.sum(axis=0)
-
-    def initialize_oracle_states(self):
+        self.client_gender_coefficient = self.client_dataset[:,:,:2].sum(axis=1)/self.n_data_per_client
+        self.client_race_coefficient = self.client_dataset[:,:,2:].sum(axis=1)/self.n_data_per_client
         
-        self.client_group_coefficients = np.zeros((self.n_clients,sum(self.n_categories_per_group)))
-
-        for client in range(self.n_clients):
-            group_dist_for_client = [] ## Group distribution for each client
-            for group_attribute in range(self.n_group_attributes):
-                group_dist_for_client += [np.random.dirichlet(self.client_dirichlet_alpha[group_attribute]).tolist()]
-
-            self.client_group_coefficients[client] = np.concatenate(group_dist_for_client).flatten() ## Group coefficient for each client
-            for class_index in range(self.n_classes):
-                n_class_for_client = self.client_dataset[client,class_index] ## Number of samples for each class for each client
-                for i in range(n_class_for_client):
-                    group_attribute_for_client = []
-                    for group_attribute in range(self.n_group_attributes):
-                        group_attribute_for_client.append(np.random.choice(np.arange(self.n_categories_per_group[group_attribute]),p = group_dist_for_client[group_attribute]))
-
-    def update_client_selection_matrix(self,u,learner_class_preference):
+    def update_client_selection_matrix(self,u,learner_group_preference):
         
         if u==-1:
             return
         #### Sample datapoints for each client 
-        self.client_dataset_selection_matrix = np.zeros((self.n_clients,self.n_classes))
+        self.client_dataset_selection_matrix = np.zeros((self.n_clients,self.n_data_per_client,sum(self.n_categories_per_group)))
         #### Compute probability of each class for each client
-        p_class = np.ones((self.n_classes,1))
-        learner_class_preference = np.array(learner_class_preference)
-        p_class[learner_class_preference] = np.array(self.dist_classes[u]).reshape(-1,1)
-        ### Set other values to 1 - 2*self.dist_classes[u]
-        other_classes = [i for i in range(self.n_classes) if i not in learner_class_preference]
-        p_class[other_classes] = (1 - sum(self.dist_classes[u]))/(self.n_classes-len(self.dist_classes[u]))
-        p_class = p_class.flatten()
+        p_race = np.ones((self.n_races,1))
+        learner_gender_preference = learner_group_preference[0]
+        learner_race_preference = learner_group_preference[1]
+        p_gender = self.dist_groups[u][0]
+        
+        p_race[learner_race_preference] = self.dist_groups[u][1]
+        other_races = [i for i in range(self.n_races) if i not in learner_race_preference]
+        p_race[other_races] = 1 - sum(self.dist_groups[u][1])
+        p_race = p_race.flatten()
         participating_clients = np.where(self.client_selection_matrix==1)[0]
-        class_coefficient = self.client_class_coefficient[participating_clients].mean(axis=0)
-        class_coefficient = class_coefficient/np.sum(class_coefficient)
-        p_class = p_class*class_coefficient + 1e-6
-        p_class = p_class/np.sum(p_class)
+        gender_coefficient = self.client_gender_coefficient[participating_clients].mean(axis=0)
+        gender_coefficient = gender_coefficient/np.sum(gender_coefficient)
+        p_gender = p_gender*gender_coefficient + 1e-6
+        p_gender = p_gender/np.sum(p_gender)
+
+        race_coefficient = self.client_race_coefficient[participating_clients].mean(axis=0)
+        race_coefficient = race_coefficient/np.sum(race_coefficient)
+        race_coefficient = p_race*race_coefficient + 1e-6
+        p_race = p_race/np.sum(p_race)
+
+
         for client in range(self.n_clients):
             if self.client_selection_matrix[client]:
-                dataset_size = np.random.randint(1,300) ### Dataset size for each participating client
-                try:
-                    class_size_coeff = np.random.dirichlet(p_class)
-                except:
-                    print("Error",p_class)
-                    import pdb;pdb.set_trace()
-                    class_size_coeff = np.ones_like(p_class)/len(p_class)
-                    
-                self.client_dataset_selection_matrix[client] = (class_size_coeff*dataset_size).astype(int)
-                self.clients[client].sample_training_data(self.client_dataset_selection_matrix[client])
-
-           
-        self.class_dist = self.client_dataset_selection_matrix.sum(axis=0)
-        self.class_dist = self.class_dist/np.sum(self.class_dist)
-
-
+                dataset_size = np.random.randint(1,self.n_data_per_client) ### Dataset size for each participating client
+                race_size_coeff = np.random.dirichlet(p_race)
+                gender_size_coeff = np.random.dirichlet(p_gender)              
+                race_samples = np.random.choice(np.arange(self.n_races),size=dataset_size,p = race_size_coeff)
+                gender_samples = np.random.choice(np.arange(self.n_genders),size=dataset_size,p = gender_size_coeff)
+                self.client_dataset_selection_matrix[client,:,gender_samples] = 1
+                self.client_dataset_selection_matrix[client,:,self.n_genders + race_samples] = 1
+                self.clients[client].sample_training_data(self.client_dataset_selection_matrix[client],"group")
 
         self.group_dist = self.client_dataset_selection_matrix_groups.sum(axis=0)
         self.group_dist[0:self.n_categories_per_group[0]] = self.group_dist[0:self.n_categories_per_group[0]]/np.max(self.group_dist[0:self.n_categories_per_group[0]])
         self.group_dist[self.n_categories_per_group[0]:] = self.group_dist[self.n_categories_per_group[0]:]/np.max(self.group_dist[self.n_categories_per_group[0]:])
+    def update_client_selection_matrix(self):
         for client in range(self.n_clients):
             self.client_selection_matrix[client] = np.random.choice([0,1],p = self.p_stay[int(self.client_selection_matrix[client])])
         if self.client_selection_matrix.sum() == 0:
@@ -259,16 +237,7 @@ class Oracle():
     
 
     def create_client_datasets_files(self,dataset_name):
-        df = pd.read_csv("data/"+dataset_name+"_train.csv")
-        self.dataset_name = dataset_name
-        for client in range(self.n_clients):
-            df_client = pd.DataFrame()
-            for class_idx in range(self.n_classes):
-                df_class = df[df['label']==class_idx]
-                df_class = df_class.sample(n=self.client_dataset[client,class_idx])
-                df_client = pd.concat([df_client,df_class])
-            df_client.to_csv(self.client_dataset_path+dataset_name+"_client_"+str(client)+".csv",index=False)
-
+        return
     def initialize_clients(self,neural_network):
         self.clients = []
         for client_id in range(self.n_clients):
