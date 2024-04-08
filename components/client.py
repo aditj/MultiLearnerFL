@@ -32,11 +32,22 @@ class Client():
         return self.neural_network.state_dict()
     def sample_training_data_group(self,dataset_selection_row,n_genders,n_races):
         self.training_data = pd.DataFrame()
+        data_copy = self.df.copy()
         for gender in range(n_genders):
             for race in range(n_races):
-                n_samples = dataset_selection_row[:,gender + n_races*race].sum()
-                if n_samples> len(self.df)
-        for sample in range(self.n_data)
+                n_samples = np.multiply(dataset_selection_row[:,gender],dataset_selection_row[:,n_genders+race]).sum()//2
+
+                data_copy = self.df[(self.df['race']==race)&(self.df['gender']==gender)]
+                if n_samples > data_copy.shape[0]:
+                    sampled_training_data = data_copy.index
+                else:
+                    sampled_training_data = np.random.choice(data_copy.index, size=int(n_samples), replace=False)
+                self.training_data = pd.concat([self.training_data,self.df.iloc[sampled_training_data,:]])
+        self.training_data = self.training_data.reset_index(drop=True)
+    def get_ohe_training_data(self,n_genders,n_races):
+        genders = self.training_data.values[:,[2]].astype(int)
+        races = self.training_data.values[:,[3]].astype(int)
+        return np.concatenate([np.eye(n_genders)[genders],np.eye(n_races)[races]],axis=2).reshape(-1,n_genders+n_races)
     def sample_training_data(self,dataset_selection_row):
 
         self.training_data = pd.DataFrame()
