@@ -9,7 +9,7 @@ from components.net import CNN
 ##### Train NN with respect to sampled data
 ##### Validate NN with respect to standard validation dataset
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DEVICE = torch.device("mps")
 
 class Client():
     def __init__(self,
@@ -65,8 +65,9 @@ class Client():
 
     
     def train(self):
+        print("Client training data size: ",self.training_data.shape[0])
         if self.training_data.shape[0] == 0:
-            print("No training data available for client ",self.client_id)
+            # print("No training data available for client ",self.client_id)
             return 0
         x = torch.from_numpy(self.training_data.iloc[:,1:].values).float().to(self.neural_network.device)
         y = torch.from_numpy(self.training_data.iloc[:,0].values).long().to(self.neural_network.device)

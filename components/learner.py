@@ -17,7 +17,7 @@ class Learner():
             dataset_path = "./data/mnist_train.csv",
             validation_data_per_class = 100
     ):
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("mps")
 
         self.class_preference = class_preference
         self.neural_network = neural_network().to(device)
@@ -47,5 +47,11 @@ class Learner():
         total = y.size(0)
         correct = (predicted == y).sum().item()
         return correct/total
+
     def set_weights(self,weights):
         self.neural_network.load_state_dict(weights)
+    def random_init_weights(self):
+        weights_current = self.neural_network.state_dict()
+        for key in weights_current.keys():
+            weights_current[key] = torch.randn(weights_current[key].shape)
+        self.neural_network.load_state_dict(weights_current)

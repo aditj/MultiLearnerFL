@@ -15,13 +15,13 @@ class Oracle():
                 p_stay = [[0.7,0.3],[0.3,0.7]],
                 N_learners = 5,
                 client_dirichlet_alpha = [[0.6,0.4],[0.42,0.2,0.16,0.14,0.08]],
-                state_thresholds_groups = [0,0.2,0.4,0.6,0.8],
+                state_thresholds_groups = [0,0.05,0.1,0.2,0.3],
                 success_thresholds_groups = 0.75,
                 learner_group_preference =  [[0,1],[0,3],[1,0],[1,1],[0,2]],
                 N_mins = [0,0.5,1], ### Minimum number of samples per class per client
-                dist_groups = [[[0.5,0.5],[0.7,0.1,0.1,0.1,0.1]],
-                                [[0.6,0.6],[0.8,0.3,0.3,0.3,0.3]],
-                                [[0.7,0.3],[0.9,0.5,0.5,0.5,0.5]]
+                dist_groups = [[[0.5,0.3],[0.7,0.1,0.1,0.1,0.1]],
+                                [[0.6,0.4],[0.8,0.2,0.2,0.2,0.2]],
+                                [[0.7,0.7],[0.9,0.5,0.5,0.5,0.5]]
                 ],
                 client_dataset_path = "data/client_dataset/",
                 dataset_name = "utkface"
@@ -54,7 +54,7 @@ class Oracle():
     def initialize_client_dataset(self):
         data = pd.read_csv("data/utkface.csv")
 
-        self.n_data_per_client = 100
+        self.n_data_per_client = 200
         self.client_dataset = np.zeros((self.n_clients,self.n_data_per_client,sum(self.n_categories_per_group)))
 
         self.n_genders = 2

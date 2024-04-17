@@ -5,9 +5,9 @@ import torch
 import numpy as np
 
 class CNN(nn.Module):
-    def __init__(self,device=torch.device("cuda")):
+    def __init__(self,device=torch.device("mps")):
         super(CNN, self).__init__()
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("mps")
 
         self.conv1 = nn.Conv2d(1, 32, kernel_size=5)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=5)
@@ -32,9 +32,10 @@ class CNN(nn.Module):
         return F.nll_loss(y_pred, y)        
 
     def train(self,x,y):
-        self.optimizer.zero_grad()
-        output = self.forward(x)
-        loss = self.loss(output,y)
-        loss.backward()
-        self.optimizer.step()
+        for epoch in range(10):
+            self.optimizer.zero_grad()
+            output = self.forward(x)
+            loss = self.loss(output,y)
+            loss.backward()
+            self.optimizer.step()
         return loss.item()
