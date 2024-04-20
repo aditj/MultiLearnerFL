@@ -15,7 +15,8 @@ class CNN(nn.Module):
         self.fc1 = nn.Linear(1024, 128)
         self.fc2 = nn.Linear(128, 10)
         self.device = device
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=0.0001)
+        self.batch_size = 32
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=0.00001)
     def forward(self, x):
         x = x.reshape(-1,1,28,28)
         x = F.relu(F.max_pool2d(self.conv1(x), 2))
@@ -32,7 +33,11 @@ class CNN(nn.Module):
         return F.nll_loss(y_pred, y)        
 
     def train(self,x,y):
-        for epoch in range(10):
+        for epoch in range(100):
+            # sample minibatch
+            idx = np.random.choice(range(x.shape[0]),self.batch_size) if x.shape[0] > self.batch_size else range(x.shape[0])
+            x = x[idx]
+            y = y[idx]
             self.optimizer.zero_grad()
             output = self.forward(x)
             loss = self.loss(output,y)

@@ -74,7 +74,7 @@ class Oracle():
         self.client_dataset = np.zeros_like(self.client_dataset)
         for client in range(self.n_clients):
             p_client = np.random.dirichlet(self.client_dirichlet_alpha_class)
-            p_client = [0.2,0.8,0,0,0,0,0,0,0,0]
+            p_client = [0.33,0.33,0.34,0,0,0,0,0,0,0]
             np.random.shuffle(p_client)
             
             clients_class_indices = np.random.choice(np.arange(self.n_classes), size = self.n_datapoints,p = p_client)
@@ -96,28 +96,30 @@ class Oracle():
         #### Sample datapoints for each client 
         self.client_dataset_selection_matrix = np.zeros((self.n_clients,self.n_classes))
         #### Compute probability of each class for each client
-        p_class = np.ones((self.n_classes,1))
+        p_class = np.zeros((self.n_classes,))
         learner_class_preference = np.array(learner_class_preference)
-        p_class[learner_class_preference] = self.dist_classes[u].reshape(-1,1)
+        
+        p_class[learner_class_preference] = 1# self.dist_classes[u].reshape(-1,1)
         ### Set other values to 1 - 2*self.dist_classes[u]
-        other_classes = [i for i in range(self.n_classes) if i not in learner_class_preference]
-        p_class[other_classes] = (1 - sum(self.dist_classes[u]))/(self.n_classes-len(self.dist_classes[u]))
-        p_class = p_class.flatten()
-        participating_clients = np.where(self.client_selection_matrix==1)[0]
-        class_coefficient = self.client_class_coefficient[participating_clients].mean(axis=0)
-        class_coefficient = class_coefficient/np.sum(class_coefficient)
-        p_class = p_class*class_coefficient + 1e-6
+        # other_classes = [i for i in range(self.n_classes) if i not in learner_class_preference]
+        # p_class[other_classes] = (1 - sum(self.dist_classes[u]))/(self.n_classes-len(self.dist_classes[u]))
+        # p_class = p_class.flatten()
+        # participating_clients = np.where(self.client_selection_matrix==1)[0]
+        # class_coefficient = self.client_class_coefficient[participating_clients].mean(axis=0)
+        # class_coefficient = class_coefficient/np.sum(class_coefficient)
+        # p_class = p_class*class_coefficient + 1e-6
         p_class = p_class/np.sum(p_class)
+        # print("p_class: ",p_class)
         for client in range(self.n_clients):
             if self.client_selection_matrix[client]:
-                dataset_size = np.random.randint(self.n_datapoints//2,self.n_datapoints) ### Dataset size for each participating client
+                sample_factor = [10,3,1.1][u]
+                dataset_size = np.random.randint(self.n_datapoints//sample_factor,self.n_datapoints) ### Dataset size for each participating client
                 try:
-                    class_size_coeff = np.random.dirichlet(p_class)
+                    class_size_coeff = p_class#np.random.dirichlet(p_class)
                 except:
                     print("Error",p_class)
                     import pdb;pdb.set_trace()
                     class_size_coeff = np.ones_like(p_class)/len(p_class)
-                    
                 self.client_dataset_selection_matrix[client] = (class_size_coeff*dataset_size).astype(int)
                 self.clients[client].sample_training_data(self.client_dataset_selection_matrix[client])
 
