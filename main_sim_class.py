@@ -9,10 +9,10 @@ from components.learner import Learner
 N = 5
 O = 5
 U = 4
-M = 50
+M = 90
 policy_parameters_load = np.zeros((N,O,3*(U-1)))
-policy_parameters_load[:,:,0::3] = np.array([[M,M,M],[M,M,M],[M-30,M-25,M-20],[M-40,M-40,M-40],[0,0,0]])
-policy_parameters_load[:,:,1::3] = np.array([[M,M,M],[M,M,M],[M-20,M-15,M-10],[M-40,M-40,M-40],[0,0,0]])
+policy_parameters_load[:,:,0::3] = np.array([[M,M,M],[M-10,M-10,M-10],[M-60,M-60,M-60],[M-80,M-80,M-80],[0,0,0]])
+policy_parameters_load[:,:,1::3] = np.array([[M,M,M],[M-10,M-10,M-10],[M-60,M-60,M-60],[M-80,M-80,M-80],[0,0,0]])
 policy_parameters_load[:,:,2::3] =  np.array([[1],[1],[1],[1],[1]])
 
 ### Greedy Scheduling, Random Action
@@ -116,5 +116,5 @@ for policy in range(len(policies)):
             for m in range(min(len(evaluation_metric_rounds),M-1)):
                 evaluation_metric_mean[policy,mc_round,learner,m] = evaluation_metric_rounds[m]
 
-print(evaluation_metric_mean[0,0,0,:])
+print(evaluation_metric_mean[:,:,:,:].max(axis=2))
 print(evaluation_metric[2,:,:,0])
