@@ -9,7 +9,7 @@ from components.net import CNN
 ##### Train NN with respect to sampled data
 ##### Validate NN with respect to standard validation dataset
 
-DEVICE = torch.device("mps")
+DEVICE = torch.device("cuda")
 
 class Client():
     def __init__(self,

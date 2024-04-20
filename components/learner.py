@@ -17,7 +17,7 @@ class Learner():
             dataset_path = "./data/mnist_train.csv",
             validation_data_per_class = 100
     ):
-        device = torch.device("mps")
+        device = torch.device("cuda")
 
         self.class_preference = class_preference
         self.neural_network = neural_network().to(device)

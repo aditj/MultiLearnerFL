@@ -43,7 +43,7 @@ oracle = Oracle()
 learners = [Learner(oracle.learner_class_preference[i],CNN) for i in range(N_Learners)]
 
 
-PERFORM_EXP =  1
+PERFORM_EXP =  0
 
 if PERFORM_EXP:
     for mc_round in tqdm.tqdm(range(N_mc)):
@@ -116,5 +116,5 @@ for policy in range(len(policies)):
             for m in range(min(len(evaluation_metric_rounds),M-1)):
                 evaluation_metric_mean[policy,mc_round,learner,m] = evaluation_metric_rounds[m]
 
-print(evaluation_metric_mean[0,0,0,:])
+print(evaluation_metric_mean[:,:,0,:].mean(axis=1))
 print(evaluation_metric[2,:,:,0])
