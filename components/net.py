@@ -5,9 +5,9 @@ import torch
 import numpy as np
 
 class CNN(nn.Module):
-    def __init__(self,device=torch.device("cuda")):
+    def __init__(self,device=torch.device("mps")):
         super(CNN, self).__init__()
-        device = torch.device("cuda")
+        device = torch.device("cuda") if torch.cuda.is_available() else torch.device("mps")
 
         self.conv1 = nn.Conv2d(1, 32, kernel_size=5)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=5)

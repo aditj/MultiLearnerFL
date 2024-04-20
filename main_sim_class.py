@@ -43,7 +43,7 @@ oracle = Oracle()
 learners = [Learner(oracle.learner_class_preference[i],CNN) for i in range(N_Learners)]
 
 
-PERFORM_EXP =  0
+PERFORM_EXP =  1
 
 if PERFORM_EXP:
     for mc_round in tqdm.tqdm(range(N_mc)):
